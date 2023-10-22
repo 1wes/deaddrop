@@ -1,6 +1,44 @@
-#root {
-  max-width: 1280px;
+main{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 90vh;
+  gap: 20px;
+}
+
+h2{
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.image{
+  background-color: rgba(128, 128, 128, 0.205);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  padding: 20px;
+  margin-bottom: 50px;
+}
+
+.image img{
+  height: auto;
+  width: 100%;
+}
+
+input{
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  width: 30%;
+}
+
+input:focus{
+  outline: 1px solid rgba(128, 128, 128, 0.705);
+}
+
+form{
+  width: 50%;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
