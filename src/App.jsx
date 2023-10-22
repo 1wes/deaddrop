@@ -1,17 +1,33 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import './App.css';
+import deaddropIcon from './assets/deaddrop.svg'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [username, setUsername] = useState("");
+
+  const handleUsername = (e) => {
+    
+    setUsername(e.target.value)
+  }
+
+  const submitUsername = (e) => {
+    
+    e.preventDefault();
+
+    setUsername("")
+
+  }
 
   return (
     <>
       <main>
-        <h2>
-          welcome to my chat application
-        </h2>
+        <h2>deaddrop</h2>
+        <div className='image'>
+          <img src={deaddropIcon} alt='deadrop-icon' />
+        </div>
+        <form onSubmit={submitUsername}>
+          <input placeholder='Enter your username' value={username} onChange={handleUsername}></input>
+        </form>
       </main>
     </>
   )
