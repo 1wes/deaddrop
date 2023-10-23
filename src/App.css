@@ -45,7 +45,7 @@ input:focus{
   outline: 1px solid rgba(128, 128, 128, 0.705);
 }
 
-form, .submit-btn{
+.username, .submit-btn{
   width: 50%;
   margin: 0 auto;
   text-align: center;

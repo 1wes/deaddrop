@@ -37,7 +37,7 @@ function App() {
       </nav>
       <main>
         <h3>Join us now</h3>
-        <form onSubmit={submitUsername}>
+        <form className='username' onSubmit={submitUsername}>
           <input placeholder='Enter your username' value={username} onChange={handleUsername}></input>
         </form>
         <div className='submit-btn'>
