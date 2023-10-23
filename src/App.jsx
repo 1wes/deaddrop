@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useState, Fragment} from 'react'
 import './App.css';
-import deaddropIcon from './assets/deaddrop.svg'
+import deaddropIcon from './assets/deaddrop.svg';
+import {useNavigate} from 'react-router-dom'
 
 function App() {
+
   const [username, setUsername] = useState("");
+
+  const navigate = useNavigate();
 
   const handleUsername = (e) => {
     
@@ -14,22 +18,35 @@ function App() {
     
     e.preventDefault();
 
-    setUsername("")
+    if (username !== "") {
+      
+      navigate(`/deadDrop/chat/${username}`);
+
+      setUsername("");
+    }
 
   }
 
   return (
-    <>
-      <main>
-        <h2>deaddrop</h2>
+    <Fragment>
+      <nav>
         <div className='image'>
           <img src={deaddropIcon} alt='deadrop-icon' />
         </div>
+        <h2>deadDrop</h2>
+      </nav>
+      <main>
+        <h3>Join us now</h3>
         <form onSubmit={submitUsername}>
           <input placeholder='Enter your username' value={username} onChange={handleUsername}></input>
         </form>
+        <div className='submit-btn'>
+          <button type='submit' onClick={submitUsername}>
+            Join deadDrop
+          </button>
+        </div>
       </main>
-    </>
+    </Fragment>
   )
 }
 
