@@ -1,0 +1,67 @@
+.chat{
+    height: 95vh;
+    margin: 0 auto;
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-header{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.chat-header h2{
+    font-size: 13px;
+}
+
+.chat-area{
+    height: 70%;
+    background-color: rgba(128, 128, 128, 0.096);
+    border-radius: 5px;
+    overflow-y: auto;
+    background: url("../src/assets/chat.avif");
+    object-fit: cover;
+    background-color: rgba(0, 0, 0, 0.8);
+    background-blend-mode: multiply;
+}
+
+.message-input{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 5px;
+}
+
+.message{
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+}
+
+.message input{
+    width: 100%;
+    outline: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.message input:focus{
+    outline: 1px solid rgba(128, 128, 128, 0.61);
+}
+
+.message-input button{
+    padding: 1px;
+}
+
+.send-msg{
+    width: 10%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.send-msg i{
+    font-size: 25px;
+    margin-top: 5px;
+}
