@@ -13,6 +13,12 @@
     align-items: center;
 }
 
+.bubble-header{
+    display: flex;
+    font-size: 10px;
+    justify-content: space-between;
+}
+
 .chat-header h2{
     font-size: 13px;
 }
@@ -26,6 +32,68 @@
     object-fit: cover;
     background-color: rgba(0, 0, 0, 0.8);
     background-blend-mode: multiply;
+    padding:5px;
+
+    &::-webkit-scrollbar{
+        background-color: black;
+        width:2px
+    }
+
+    &::-webkit-scrollbar-button{
+        display: none;
+    }
+}
+
+.me{
+    margin-left: auto;
+}
+
+article{
+    padding: 5px;
+    margin: 0 0 10px 0;
+    width: fit-content;
+    max-width: 70%;
+    min-width:13%;
+}
+
+.message-header{
+    display: flex;
+    justify-content: space-between;
+    margin: 0 0 5px 0;
+    font-size: 10px;
+    color: white;
+}
+
+h4{
+    margin: 0 !important;
+}
+
+.message-body{
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left;
+    word-wrap:break-word;
+    line-height: 20px;
+    font-size: 12px;
+}
+
+p{
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.receiver{
+    background-color: rgb(28, 71, 109);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+  
+.me{
+    background-color: rgb(36,144,85);
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
 .message-input{
