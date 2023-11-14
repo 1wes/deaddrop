@@ -35,7 +35,7 @@ function App() {
         </div>
         <h2>deadDrop</h2>
       </nav>
-      <main>
+      <main className='hero'>
         <h3>Join us now</h3>
         <form className='username' onSubmit={submitUsername}>
           <input placeholder='Enter your username' value={username} onChange={handleUsername}></input>
