@@ -62,6 +62,10 @@
     background-color: rgba(0, 0, 0, 0.1);
 }
 
+.active-user{
+    background-color: rgba(128, 128, 128, 0.103);
+}
+
 .contacts-footer{
     padding: 0 0 0 15px;
     display: flex;
