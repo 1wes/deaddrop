@@ -32,6 +32,18 @@
     font-size: 13px;
 }
 
+.notification-label{
+    margin-left: auto;
+    width: 10px;
+    height: 10px;
+    background-color: rgb(3,145,253);
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .user-list{
     padding: 0 20px 0 0;
     margin: 0 !important;
