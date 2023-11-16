@@ -155,7 +155,7 @@ const ChatArea = () => {
                         <span className="disclaimer">Your messages are not end-to-end encrypted, yet 😂!!</span>
                     </div>
                 </div>
-                {activeUsers.recipient!=="" && <div className="chat">
+                {activeUsers.recipient !== "" ? <div className="chat">
                     <div className="chat-header">
                         <div className="image" id="name">
                             {activeUsers.recipient.substring(0, 1)}
@@ -164,9 +164,8 @@ const ChatArea = () => {
                     </div>
                     <div className="chat-area">
                         {
-                            messages.map((message) => (
-                            
-                                <article key={message.sentAt} className={message.sender === username ? "me" : "receiver"} >
+                            messages.map((message, index) => (
+                                message.sender === activeUsers.recipient && <article key={index} className={message.sender === username ? "me" : "receiver"} >
                                     <header className="bubble-header">
                                         <h4 className="sender">
                                             {message.sender === username ? "You" : message.sender}
@@ -193,8 +192,8 @@ const ChatArea = () => {
                             </i>
                         </button>
                     </div>
-                </div>}
-                <HeroPage/>
+                </div> :
+                <HeroPage />}
             </main>
         </Fragment>
     )
