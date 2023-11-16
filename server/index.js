@@ -1,71 +1,76 @@
 const express = require('express');
 const app = express();
-const { port } = require('./env-config');
-const webSocket = require('ws');
 const cors = require('cors');
-const { parse } = require('dotenv');
+const { port } = require('./env-config');
+const http = require('http');
+const socketIo = require('socket.io');
+const { randomInt } = require('crypto');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors);
+app.use(cors());
 
-// websocket server
-const webSocketServer = new webSocket.Server({
-    port: 8080
-},
-    console.log("The websocket server is running at port 8080")
-);
+app.get("/", (req, res) => {
+    res.send("This is the homepage buoy");
+});
 
-const recentMessages = [];
+const server = http.createServer(app);
 
-const users = new Set();
-
-const sendMessage = (message) => {
-    
-    for (const user of users) {
-        user.socket.send(JSON.stringify(message))
+const io = socketIo(server, {
+    cors: {
+        origin:"http://localhost:5173"
     }
-}
+});
 
-webSocketServer.on("connection", (socket) => {
-    
-    const userRef = {
-        socket: socket,
-        lastSeen:Date.now()
+const connectedUsers = new Map(); // Map to store connected users
+
+io.use((socket, next) => {
+    const username = socket.handshake.auth.username;
+
+    if (!username) {
+        return next(new Error("Invalid username"))
     }
 
-    users.add(userRef);
+    socket.username = username;
 
-    socket.on("message", (message) => {
-        
-        try {
+    connectedUsers.set(socket.id, { id: socket.id, username }); // Add user to the connectedUsers map
 
-            const parsedMessage = JSON.parse(message);
+    next();
+});
 
-            if (typeof parsedMessage.sender !== "string" || typeof parsedMessage.body !== "string") {
-                console.log("Invalid message. It is not a string", message)
+const clients = []
 
-                return 
-            }
+io.on("connection", (socket) => {
 
-            const verifiedMessage = {
-                sender: parsedMessage.sender,
-                body: parsedMessage.body,
-                sentAt:Date.now()
-            }
+    socket.join(socket.username);
 
-            sendMessage(verifiedMessage);
-            
-        } catch(error) {
-            console.log(error)
-        }
+    io.emit("users", Array.from(connectedUsers.values()));
+
+    socket.on("sent-message", (msg) => {
+
+        const message = {
+            body: msg.body,
+            sender: socket.username,
+            senderId:msg.senderId,
+            recipient: msg.recipientName,
+            recipientId:msg.recipientId,
+            sentAt: new Date(Date.now())
+        } 
+                                    
+        io.to(message.recipientId).emit("message-response", message);
+
+        io.to(socket.id).emit("message-response", message);
     })
+
+    socket.on("disconnect", () => {
+        connectedUsers.delete(socket.id);
+
+        io.emit("users", Array.from(connectedUsers.values()));
+    });
 })
 
-
-// http server
-app.listen(port, () => {
-    
-    console.log(`Server started at port ${port}`);
+server.listen(port, () => {
+    console.log(`Server running at port ${port}`)
 });
+
 
