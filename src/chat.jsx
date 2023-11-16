@@ -55,6 +55,10 @@ const ChatArea = () => {
 
     useEffect(() => {
 
+        socket.connect();
+
+        socket.auth = {username}
+
         socket.on("users", (users) => {
             
             setUsers({
@@ -62,16 +66,9 @@ const ChatArea = () => {
             });
         })
 
-        socket.auth = {username}
-
-        socket.connect();
-
-        socket.on("connect", () => {
-            socket.emit("joinRoom")
-        });
-
         socket.on("message-response", (message) => {
-            setMessages((_messages) => [..._messages, message]);
+
+                setMessages((prevMessage) => [...prevMessage, message]);
         })
 
         socket.on("connect_error", (err) => {
@@ -80,6 +77,17 @@ const ChatArea = () => {
                 console.log(err);
             }
         })
+
+        socket.on("disconnect", () => {
+            console.log(`${socket.username} disconnected`);
+        });
+
+        return () => {
+            socket.off("users");
+            socket.off("message-response");
+            socket.off("connect_error");
+            socket.off("disconnect")
+        }
         
     }, [messages]);
 
@@ -90,10 +98,11 @@ const ChatArea = () => {
 
     const selectRecipient = (event, param) => {
         
-        setActiveUsers({
+        setActiveUsers((prevActiveUsers) => ({
+            ...prevActiveUsers,
             recipient: param.name,
-            id: param.id,
-        });
+            id:param.id
+        }));
     }
 
     const sendMessage = (e) => {
@@ -104,10 +113,10 @@ const ChatArea = () => {
 
             const messageDetails = {
                 body: messageBody,
-                sender:username,
-                senderId:senderId[0].userId,
+                sender: username,
+                senderId:senderId[0].id,
                 recipientName: activeUsers.recipient,
-                recipientId: activeUsers.id
+                recipientId:activeUsers.id
             }
 
             socket.emit("sent-message", messageDetails);
@@ -122,18 +131,21 @@ const ChatArea = () => {
     
     const myNetwork = users.connected ? users.connected.filter((uniqueUsers) => {
         return uniqueUsers.username!==username
-    }).map((user) => (
-        <li key={user.userId} className={user.userId===activeUsers.id?"active-user":"non-active-user"} onClick={event=>selectRecipient(event, {name:user.username, id:user.userId})}>
+    }).map((user, index) => (
+        <li key={index} className={user.id===activeUsers.id?"active-user":"non-active-user"} onClick={event=>selectRecipient(event, {name:user.username, id:user.id})}>
             <span className="user-icon">
                 {user.username.substring(0, 1)}
             </span>
             <span>
                 {user.username}
             </span>
+            {/* <span className="notification-label">
+                5
+            </span> */}
         </li>
         )
-    ):""
-    
+    ) : ""
+        
     return (
         
         <Fragment>
@@ -165,7 +177,12 @@ const ChatArea = () => {
                     <div className="chat-area">
                         {
                             messages.map((message, index) => (
-                                message.sender === activeUsers.recipient && <article key={index} className={message.sender === username ? "me" : "receiver"} >
+                                (message.senderId===activeUsers.id  || activeUsers.id===message.recipientId) &&
+                                <article key={index} className={message.sender === username ? "me" : "receiver"} >
+                                        {
+                                            console.log(`Sender is ${message.senderId} and recipient is ${message.recipientId} and active is ${activeUsers.id}`)
+                                        }
+
                                     <header className="bubble-header">
                                         <h4 className="sender">
                                             {message.sender === username ? "You" : message.sender}
