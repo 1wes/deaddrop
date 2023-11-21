@@ -68,7 +68,7 @@ const ChatArea = () => {
 
         socket.on("message-response", (message) => {
 
-                setMessages((prevMessage) => [...prevMessage, message]);
+                setMessages((prevMessage) => [...prevMessage, {...message, read:false}]);
         })
 
         socket.on("connect_error", (err) => {
@@ -103,6 +103,11 @@ const ChatArea = () => {
             recipient: param.name,
             id:param.id
         }));
+
+        setMessages((prevMessages) =>
+            prevMessages.map((message) =>
+                message.recipientId === param.id ? { ...message, read: true } : message
+            ))
     }
 
     const sendMessage = (e) => {
@@ -139,9 +144,12 @@ const ChatArea = () => {
             <span>
                 {user.username}
             </span>
-            {/* <span className="notification-label">
-                5
-            </span> */}
+            {/* {
+                messages.some(
+                    (message) => 
+                        (message.senderId===user.id && !message.read)
+                ) && <span className="unread-badge">Unread</span>
+            } */}
         </li>
         )
     ) : ""
@@ -179,10 +187,6 @@ const ChatArea = () => {
                             messages.map((message, index) => (
                                 (message.senderId===activeUsers.id  || activeUsers.id===message.recipientId) &&
                                 <article key={index} className={message.sender === username ? "me" : "receiver"} >
-                                        {
-                                            console.log(`Sender is ${message.senderId} and recipient is ${message.recipientId} and active is ${activeUsers.id}`)
-                                        }
-
                                     <header className="bubble-header">
                                         <h4 className="sender">
                                             {message.sender === username ? "You" : message.sender}
