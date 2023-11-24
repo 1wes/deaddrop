@@ -125,9 +125,12 @@
     justify-content: space-between;
 }
 
+.connected-users .chat-header h2{
+    color: rgb(3,145,253);
+}
+
 .chat-header h2{
     font-size: 13px;
-    color: rgb(3,145,253);
 }
 
 #name{
@@ -164,7 +167,7 @@
 }
 
 article{
-    padding: 5px;
+    padding: 5px 5px 0 5px;
     margin: 0 0 10px 0;
     width: fit-content;
     max-width: 70%;
