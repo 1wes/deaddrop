@@ -106,7 +106,7 @@ const ChatArea = () => {
 
         setMessages((prevMessages) =>
             prevMessages.map((message) =>
-                message.recipientId === param.id ? { ...message, read: true } : message
+                message.senderId === param.id ? { ...message, read: true } : message
             ))
     }
 
@@ -144,12 +144,12 @@ const ChatArea = () => {
             <span>
                 {user.username}
             </span>
-            {/* {
+            {
                 messages.some(
                     (message) => 
-                        (message.senderId===user.id && !message.read)
-                ) && <span className="unread-badge">Unread</span>
-            } */}
+                        (user.id===message.senderId && !message.read)
+                ) && <span className="unread-badge"></span>
+            }
         </li>
         )
     ) : ""
