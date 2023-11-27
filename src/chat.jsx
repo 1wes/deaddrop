@@ -196,17 +196,15 @@ const ChatArea = () => {
                             messages.map((message, index) => (
                                 (message.senderId===activeUsers.id  || activeUsers.id===message.recipientId) &&
                                 <article key={index} className={message.sender === username ? "me" : "receiver"} >
+                                    <p className="message-body">
+                                        {message.body}
+                                    </p>
+                                    
                                     <header className="bubble-header">
-                                        <h4 className="sender">
-                                            {message.sender === username ? "You" : message.sender}
-                                        </h4>
                                         <span className="timestamp">
                                             {new Date(message.sentAt).toLocaleTimeString(undefined, { timeStyle: "short" })}
                                         </span>
                                     </header>
-                                    <p className="message-body">
-                                        {message.body}
-                                    </p>
                                 </article>
                             ))
                         }
