@@ -68,7 +68,10 @@ const ChatArea = () => {
 
         socket.on("message-response", (message) => {
 
-                setMessages((prevMessage) => [...prevMessage, {...message, read:false}]);
+            // if message is for selected inbox, mark as read
+            setMessages((prevMessage) =>
+                activeUsers.id===message.senderId?
+                    [...prevMessage, { ...message, read: true }] : [...prevMessage, { ...message, read: false }]);
         })
 
         socket.on("connect_error", (err) => {
@@ -104,6 +107,7 @@ const ChatArea = () => {
             id:param.id
         }));
 
+        // mark message as read on opening inbox
         setMessages((prevMessages) =>
             prevMessages.map((message) =>
                 message.senderId === param.id ? { ...message, read: true } : message
@@ -146,11 +150,12 @@ const ChatArea = () => {
             <span>
                 {user.username}
             </span>
-            {
+            {   
+                // check if current listed inboxes have unread messages
                 messages.some(
                     (message) =>
                         (user.id === message.senderId && !message.read)
-                ) && <span className="unread-badge"> {   
+                ) && user.id!==activeUsers.id && <span className="unread-badge"> {   
                         messages.filter((message) => !message.read && user.id === message.senderId).length
                     } </span>
             }      
