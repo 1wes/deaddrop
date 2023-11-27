@@ -131,8 +131,10 @@ const ChatArea = () => {
     }
 
     const senderId = users.connected ? users.connected.filter((user) => {
-        return user.username===username
-    }) : ""
+        return user.username === username
+    }) : "";
+
+    let unreadMessages;
     
     const myNetwork = users.connected ? users.connected.filter((uniqueUsers) => {
         return uniqueUsers.username!==username
@@ -146,10 +148,12 @@ const ChatArea = () => {
             </span>
             {
                 messages.some(
-                    (message) => 
-                        (user.id===message.senderId && !message.read)
-                ) && <span className="unread-badge"></span>
-            }
+                    (message) =>
+                        (user.id === message.senderId && !message.read)
+                ) && <span className="unread-badge"> {   
+                        messages.filter((message) => !message.read && user.id === message.senderId).length
+                    } </span>
+            }      
         </li>
         )
     ) : ""
