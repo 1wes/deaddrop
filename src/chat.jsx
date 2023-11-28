@@ -1,15 +1,19 @@
 import { Fragment, useState, useEffect, useRef } from "react";
 
-import './chat.css'
-import deadDrop from './assets/deaddrop.svg'
+import './chat.css';
 
 import { useParams } from "react-router-dom";
 
 import { LuSendHorizonal } from 'react-icons/lu';
+import { FaLockOpen } from 'react-icons/fa';
 
 import socket from "./socket";
 
-import { FaLockOpen } from 'react-icons/fa';
+import deadDrop from './assets/deaddrop.svg'
+import openSound from './assets/ringtone-1-46486.mp3';
+import closedSound from './assets/hotel-bell-ding-1-174457.mp3';
+
+
 
 const HeroPage = () => {
     
@@ -44,6 +48,10 @@ const ChatArea = () => {
 
     const latestMessage = useRef(null);
 
+    const openInboxAudio = new Audio(openSound);
+
+    const closedInboxAudio = new Audio(closedSound);
+
     useEffect(() => {
         
         if (latestMessage.current) {
@@ -66,12 +74,16 @@ const ChatArea = () => {
             });
         })
 
-        socket.on("message-response", (message) => {
+        socket.on("message-response", (msg) => {
 
             // if message is for selected inbox, mark as read
-            setMessages((prevMessage) =>
-                activeUsers.id===message.senderId?
-                    [...prevMessage, { ...message, read: true }] : [...prevMessage, { ...message, read: false }]);
+            const message=activeUsers.id === msg.senderId? { ...msg, read: true }:{ ...msg, read: false };
+            
+            setMessages((prevMessage) => [...prevMessage, message]);
+
+            // play different notification chime depending on whether inbox is open or closed
+            msg.sender === username ? "" : activeUsers.id === msg.senderId ? openInboxAudio.play() : closedInboxAudio.play();
+            
         })
 
         socket.on("connect_error", (err) => {
@@ -92,7 +104,7 @@ const ChatArea = () => {
             socket.off("disconnect")
         }
         
-    }, [messages]);
+    }, [messages, activeUsers, openInboxAudio, closedInboxAudio]);
 
     const handleMessage = (e) => {
         
