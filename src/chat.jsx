@@ -47,9 +47,9 @@ const ChatArea = () => {
     const username = useParams().username;
 
     const latestMessage = useRef(null);
+    const messageInput = useRef(null);
 
     const openInboxAudio = new Audio(openSound);
-
     const closedInboxAudio = new Audio(closedSound);
 
     useEffect(() => {
@@ -62,6 +62,11 @@ const ChatArea = () => {
     },[messages.length])
 
     useEffect(() => {
+
+        if (messageInput.current) {
+
+            messageInput.current.focus();
+        }
 
         socket.connect();
 
@@ -104,7 +109,7 @@ const ChatArea = () => {
             socket.off("disconnect")
         }
         
-    }, [messages, activeUsers, openInboxAudio, closedInboxAudio]);
+    }, [messages, activeUsers, openInboxAudio, closedInboxAudio, messageInput]);
 
     const handleMessage = (e) => {
         
@@ -123,7 +128,7 @@ const ChatArea = () => {
         setMessages((prevMessages) =>
             prevMessages.map((message) =>
                 message.senderId === param.id ? { ...message, read: true } : message
-            ))
+            ));     
     }
 
     const sendMessage = (e) => {
@@ -149,8 +154,6 @@ const ChatArea = () => {
     const senderId = users.connected ? users.connected.filter((user) => {
         return user.username === username
     }) : "";
-
-    let unreadMessages;
     
     const myNetwork = users.connected ? users.connected.filter((uniqueUsers) => {
         return uniqueUsers.username!==username
@@ -224,7 +227,7 @@ const ChatArea = () => {
                     </div>
                     <div className="message-input">
                         <form className="message" onSubmit={sendMessage} >
-                            <input placeholder="Type your message here" value={messageBody} onChange={handleMessage} ></input>
+                            <input placeholder="Type your message here" autoFocus ref={messageInput} value={messageBody} onChange={handleMessage} ></input>
                         </form>
                         <button className="send-msg" type="submit" onClick={sendMessage}>
                             <i>
