@@ -119,6 +119,16 @@
     align-items: center;
 }
 
+.user-status{
+    padding-top: 2px;
+    font-size: 10px;
+    font-weight: 400;
+}
+
+.user-inbox-details h2, h6{
+    margin: 0 !important;
+}
+
 .bubble-header{
     font-size: 10px;
     display: flex;
