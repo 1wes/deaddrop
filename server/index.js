@@ -80,7 +80,9 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
         connectedUsers.set(socket.id, {
             ...connectedUsers.get(socket.id), online: false, lastSeen: new Date(Date.now())
-        })
+        });
+
+        // connectedUsers.delete(socket.id)
         
         io.emit("users", Array.from(connectedUsers.values()));
     });
