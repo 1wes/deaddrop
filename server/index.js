@@ -4,23 +4,40 @@ const cors = require('cors');
 const { port } = require('./env-config');
 const http = require('http');
 const socketIo = require('socket.io');
-const { randomInt } = require('crypto');
+const session = require('express-session');
+const { session_secret } = require('./env-config');
+const socketSession = require('express-socket.io-session');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
+const server = http.createServer(app);
+
+// expression session middleware
+const sessionMiddleware = session({
+    saveUninitialized: true,
+    resave: false,
+    secret: session_secret
+});
+
+app.use(sessionMiddleware);
+
 app.get("/", (req, res) => {
     res.send("This is the homepage buoy");
 });
 
-const server = http.createServer(app);
 
 const io = socketIo(server, {
     cors: {
         origin:"http://localhost:5173"
     }
 });
+
+// socket session middleware
+io.use(socketSession(sessionMiddleware, {
+    autoSave: true
+}));
 
 const connectedUsers = new Map(); // Map to store connected users
 
@@ -33,7 +50,7 @@ io.use((socket, next) => {
 
     socket.username = username;
 
-    connectedUsers.set(socket.id, { id: socket.id, username }); // Add user to the connectedUsers map
+    connectedUsers.set(socket.id, { id: socket.id, username, online:true });
 
     next();
 });
@@ -41,8 +58,6 @@ io.use((socket, next) => {
 const clients = []
 
 io.on("connection", (socket) => {
-
-    socket.join(socket.username);
 
     io.emit("users", Array.from(connectedUsers.values()));
 
@@ -63,8 +78,10 @@ io.on("connection", (socket) => {
     })
 
     socket.on("disconnect", () => {
-        connectedUsers.delete(socket.id);
-
+        connectedUsers.set(socket.id, {
+            ...connectedUsers.get(socket.id), online: false, lastSeen: new Date(Date.now())
+        })
+        
         io.emit("users", Array.from(connectedUsers.values()));
     });
 })
