@@ -42,7 +42,12 @@ const ChatArea = () => {
     const [activeUsers, setActiveUsers] = useState({
         recipient: "",
         id: "",
-    })
+        online:""
+    });
+    const [userStatus, setUserStatus] = useState({
+        online: false,
+        typing: false
+    });
 
     const username = useParams().username;
 
@@ -70,13 +75,11 @@ const ChatArea = () => {
 
         socket.connect();
 
-        socket.auth = {username}
+        socket.auth = { username }
 
         socket.on("users", (users) => {
-            
-            setUsers({
-                connected: users
-            });
+
+            setUsers((prevUsers) => ({ ...prevUsers, connected:users }))            
         })
 
         socket.on("message-response", (msg) => {
@@ -91,6 +94,8 @@ const ChatArea = () => {
             
         })
 
+        // console.log(users.connected)
+
         socket.on("connect_error", (err) => {
             
             if (err.message === "Invalid username") {
@@ -99,7 +104,7 @@ const ChatArea = () => {
         })
 
         socket.on("disconnect", () => {
-            console.log(`${socket.username} disconnected`);
+            console.log(`Disconnected`);
         });
 
         return () => {
@@ -121,7 +126,7 @@ const ChatArea = () => {
         setActiveUsers((prevActiveUsers) => ({
             ...prevActiveUsers,
             recipient: param.name,
-            id:param.id
+            id: param.id,
         }));
 
         // mark message as read on opening inbox
@@ -156,30 +161,43 @@ const ChatArea = () => {
     }) : "";
     
     const myNetwork = users.connected ? users.connected.filter((uniqueUsers) => {
-        return uniqueUsers.username!==username
+        return uniqueUsers.username !== username
     }).map((user, index) => (
-        <li key={index} className={user.id===activeUsers.id?"active-user":"non-active-user"} onClick={event=>selectRecipient(event, {name:user.username, id:user.id})}>
+        <li key={index} className={user.id === activeUsers.id ? "active-user" : "non-active-user"}
+            onClick={event => selectRecipient(event, { name: user.username, id: user.id })}>
             <span className="user-icon">
                 {user.username.substring(0, 1)}
             </span>
             <span>
                 {user.username}
             </span>
-            {   
+            {
                 // check if current listed inboxes have unread messages
                 messages.some(
                     (message) =>
                         (user.id === message.senderId && !message.read)
-                ) && user.id!==activeUsers.id && <span className="unread-badge"> {   
-                        messages.filter((message) => !message.read && user.id === message.senderId).length
-                    } </span>
-            }      
+                ) && user.id !== activeUsers.id && <span className="unread-badge"> {
+                    messages.filter((message) => !message.read && user.id === message.senderId).length
+                } </span>
+            }
         </li>
-        )
-    ) : ""
+    )
+    ) : "";
+
+    //check whether user is online
+    const onlineStatus = () => {
+        
+        const user=users.connected.find(({id})=>id===activeUsers.id)
+
+        if (user) {
+            
+            return user.online?`online`:`last seen at ${new Date(user.lastSeen).toLocaleTimeString(undefined, {timeStyle:'short'})}`
+        }
+    }
+
+    const userOnlineStatus = onlineStatus();
         
     return (
-        
         <Fragment>
             <main className="chatrooms">
                 <div className="connected-users">
@@ -204,7 +222,10 @@ const ChatArea = () => {
                         <div className="image" id="name">
                             {activeUsers.recipient.substring(0, 1)}
                         </div>
-                        <h2>{activeUsers.recipient}</h2>
+                        <div className="user-inbox-details"> 
+                            <h2>{activeUsers.recipient}</h2>
+                            <h6 className="user-status"> { userOnlineStatus } </h6>
+                        </div>
                     </div>
                     <div className="chat-area">
                         {
