@@ -184,6 +184,36 @@ const ChatArea = () => {
     )
     ) : "";
 
+
+    const isWhen = (whenLastSeen) => {
+        
+        const currentDate = new Date().toDateString();
+
+        const dateLastSeen = new Date(whenLastSeen).toDateString();
+
+        const previousDay = new Date(currentDate);
+
+        // get yesterday's date
+        previousDay.setDate(previousDay.getDate() - 1);
+
+        const yesterday = new Date(previousDay).toDateString();
+
+        if (dateLastSeen === currentDate) {
+            
+            return `last seen today at ${new Date(whenLastSeen).toLocaleTimeString(undefined, { timeStyle: 'short' })}`;
+            
+        } else if (dateLastSeen===yesterday) {
+            
+            return `last seen yesterday at ${new Date(whenLastSeen).toLocaleTimeString(undefined, { timeStyle: 'short' })}`;
+
+        } else {
+            
+            return `last seen on ${new Date(whenLastSeen).toLocaleDateString(undefined, { dateStyle: 'medium' })} at 
+            ${new Date(whenLastSeen).toLocaleTimeString(undefined, { timeStyle: 'short' })}`;
+        }
+
+    }
+
     //check whether user is online
     const onlineStatus = () => {
         
@@ -191,7 +221,7 @@ const ChatArea = () => {
 
         if (user) {
             
-            return user.online?`online`:`last seen at ${new Date(user.lastSeen).toLocaleTimeString(undefined, {timeStyle:'short'})}`
+            return user.online?`online`:`${isWhen(user.lastSeen)}`
         }
     }
 
