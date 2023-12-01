@@ -49,6 +49,21 @@
     margin: 0 !important;
     display: flex;
     flex-direction: column;
+
+    overflow-y: auto;
+
+    &::-webkit-scrollbar{
+        background:none;
+        width:5px;
+    }
+
+    &::-webkit-scrollbar-thumb{
+        background-color: rgba(128, 128, 128, 0.2);
+    }
+
+    &::-webkit-scrollbar-button{
+        display: none;
+    }
 }
 
 .user-list li{
