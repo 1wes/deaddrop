@@ -69,7 +69,6 @@
 .user-list li{
     list-style: none;
     padding: 15px 5px;
-    border-radius: 5px;
     font-size: 12px;
     font-weight: bold;
     transition: all ease .5s;
