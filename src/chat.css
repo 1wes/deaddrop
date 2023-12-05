@@ -148,6 +148,20 @@
     display: flex;
     padding-top: 5px;
     color: rgba(255, 221, 221, 0.9);
+    gap: 5px;
+    align-items: center;
+}
+
+#read-message-tick{
+    font-size: 18px;
+}
+
+.unread{
+    color: rgb(199, 199, 199);
+}
+
+.read{
+    color: rgb(24, 195, 247);
 }
 
 .connected-users .chat-header h2{
