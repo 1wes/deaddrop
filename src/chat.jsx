@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 
 import { LuSendHorizonal } from 'react-icons/lu';
 import { FaLockOpen } from 'react-icons/fa';
+import { IoCheckmarkDone } from "react-icons/io5";
 
 import socket from "./socket";
 
@@ -270,6 +271,11 @@ const ChatArea = () => {
                                         <span className="timestamp">
                                             {new Date(message.sentAt).toLocaleTimeString(undefined, { timeStyle: "short" })}
                                         </span>
+                                            { message.sender===username && <span>
+                                                <i className="" id="read-message-tick">
+                                                    <IoCheckmarkDone />
+                                                </i>
+                                            </span>}
                                     </header>
                                 </article>
                             ))
@@ -278,7 +284,8 @@ const ChatArea = () => {
                     </div>
                     <div className="message-input">
                         <form className="message" onSubmit={sendMessage} >
-                            <input placeholder="Type your message here" autoFocus ref={messageInput} value={messageBody} onChange={handleMessage} ></input>
+                            <input placeholder="Type your message here" autoFocus ref={messageInput} value={messageBody}
+                                onChange={handleMessage}></input>
                         </form>
                         <button className="send-msg" type="submit" onClick={sendMessage}>
                             <i>
