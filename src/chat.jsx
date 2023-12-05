@@ -45,10 +45,12 @@ const ChatArea = () => {
         id: "",
         online:""
     });
-    const [userStatus, setUserStatus] = useState({
-        online: false,
-        typing: false
-    });
+    // const [readMessage, setReadMessage] = useState({
+    //     sender: "",
+    //     senderId: "",
+    //     reader: "",
+    //     readerId:""
+    // })
 
     const username = useParams().username;
 
@@ -86,16 +88,27 @@ const ChatArea = () => {
         socket.on("message-response", (msg) => {
 
             // if message is for selected inbox, mark as read
-            const message=activeUsers.id === msg.senderId? { ...msg, read: true }:{ ...msg, read: false };
+            const message = activeUsers.id === msg.senderId ? { ...msg, read: true } : { ...msg, read: false };
             
             setMessages((prevMessage) => [...prevMessage, message]);
 
             // play different notification chime depending on whether inbox is open or closed
             msg.sender === username ? "" : activeUsers.id === msg.senderId ? openInboxAudio.play() : closedInboxAudio.play();
+
+            if (message.senderId === activeUsers.id) {
+                sendReadNotification({ senderId: message.senderId, recipientId:message.recipientId });
+            }
             
         })
 
-        // console.log(users.connected)
+        socket.on("message-read", (inboxDetails) => {
+
+            setMessages((prevMessages) =>
+            prevMessages.map((message) =>
+                message.recipientId===inboxDetails.recipientId ? { ...message, read: true } : message
+            ));    
+            
+        })
 
         socket.on("connect_error", (err) => {
             
@@ -111,6 +124,7 @@ const ChatArea = () => {
         return () => {
             socket.off("users");
             socket.off("message-response");
+            socket.off("message-read");
             socket.off("connect_error");
             socket.off("disconnect")
         }
@@ -120,6 +134,11 @@ const ChatArea = () => {
     const handleMessage = (e) => {
         
         setMessageBody(e.target.value);
+    }
+
+    const sendReadNotification = (sender) => {
+        
+        socket.emit("message-read", sender);
     }
 
     const selectRecipient = (event, param) => {
@@ -134,7 +153,13 @@ const ChatArea = () => {
         setMessages((prevMessages) =>
             prevMessages.map((message) =>
                 message.senderId === param.id ? { ...message, read: true } : message
-            ));     
+            ));    
+        
+        const lastMessage = messages[messages.length - 1];
+        
+        if (messages.length && lastMessage.senderId === param.id) {
+            sendReadNotification({ senderId: lastMessage.senderId, recipientId:lastMessage.recipientId });
+        }
     }
 
     const sendMessage = (e) => {
@@ -263,6 +288,7 @@ const ChatArea = () => {
                             messages.map((message, index) => (
                                 (message.senderId===activeUsers.id  || activeUsers.id===message.recipientId) &&
                                 <article key={index} className={message.sender === username ? "me" : "receiver"} >
+                                        {console.log(message)}
                                     <p className="message-body">
                                         {message.body}
                                     </p>
@@ -272,7 +298,7 @@ const ChatArea = () => {
                                             {new Date(message.sentAt).toLocaleTimeString(undefined, { timeStyle: "short" })}
                                         </span>
                                             { message.sender===username && <span>
-                                                <i className="" id="read-message-tick">
+                                                <i className={message.read?"read":"unread"} id="read-message-tick">
                                                     <IoCheckmarkDone />
                                                 </i>
                                             </span>}
