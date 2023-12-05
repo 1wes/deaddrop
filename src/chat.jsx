@@ -95,6 +95,7 @@ const ChatArea = () => {
             // play different notification chime depending on whether inbox is open or closed
             msg.sender === username ? "" : activeUsers.id === msg.senderId ? openInboxAudio.play() : closedInboxAudio.play();
 
+            // if message is received while inbox is open, send notification to sender to blue tick
             if (message.senderId === activeUsers.id) {
                 sendReadNotification({ senderId: message.senderId, recipientId:message.recipientId });
             }
