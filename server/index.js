@@ -55,34 +55,40 @@ io.use((socket, next) => {
     next();
 });
 
-const clients = []
-
 io.on("connection", (socket) => {
 
     io.emit("users", Array.from(connectedUsers.values()));
 
+    // send message to recipient and back to sender
     socket.on("sent-message", (msg) => {
 
         const message = {
             body: msg.body,
             sender: socket.username,
-            senderId:msg.senderId,
+            senderId: msg.senderId,
             recipient: msg.recipientName,
-            recipientId:msg.recipientId,
+            recipientId: msg.recipientId,
             sentAt: new Date(Date.now())
-        } 
+        }
                                     
         io.to(message.recipientId).emit("message-response", message);
 
         io.to(socket.id).emit("message-response", message);
-    })
+    });
 
+    // notify send that their message has been read
+    socket.on("message-read", (inboxDetails) => {
+
+        io.to(inboxDetails.senderId).emit("message-read", inboxDetails);
+    });
+
+    // update online status once user disconnects
     socket.on("disconnect", () => {
         connectedUsers.set(socket.id, {
             ...connectedUsers.get(socket.id), online: false, lastSeen: new Date(Date.now())
         });
 
-        // connectedUsers.delete(socket.id)
+        connectedUsers.delete(socket.id)
         
         io.emit("users", Array.from(connectedUsers.values()));
     });
