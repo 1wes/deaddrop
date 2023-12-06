@@ -50,7 +50,7 @@ io.use((socket, next) => {
 
     socket.username = username;
 
-    connectedUsers.set(socket.id, { id: socket.id, username, online:true });
+    connectedUsers.set(socket.id, { id: socket.id, username, online:true, typing:false });
 
     next();
 });
@@ -73,13 +73,25 @@ io.on("connection", (socket) => {
                                     
         io.to(message.recipientId).emit("message-response", message);
 
-        io.to(socket.id).emit("message-response", message);
+        io.to(socket.id).emit("message-response", message); 
     });
 
     // notify send that their message has been read
     socket.on("message-read", (inboxDetails) => {
 
         io.to(inboxDetails.senderId).emit("message-read", inboxDetails);
+    });
+
+    // notify recipient when sender is typing
+    socket.on("user-is-typing", (typerDetails) => {
+
+        connectedUsers.set(socket.id, {
+            ...connectedUsers.get(typerDetails.typerId), typing: true, recipient:typerDetails.recipientId, typer:typerDetails.typer
+        });
+          
+        io.emit("users", Array.from(connectedUsers.values()));
+        
+        io.to(typerDetails.recipientId).emit("user-is-typing", typerDetails);
     });
 
     // update online status once user disconnects
