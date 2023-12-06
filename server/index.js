@@ -94,6 +94,11 @@ io.on("connection", (socket) => {
         io.to(typerDetails.recipientId).emit("user-is-typing", typerDetails);
     });
 
+    socket.on("stop-typing-notification", (recipient) => {
+        
+        io.to(recipient.recipientId).emit("stop-typing-notification");
+    })
+
     // update online status once user disconnects
     socket.on("disconnect", () => {
         connectedUsers.set(socket.id, {
