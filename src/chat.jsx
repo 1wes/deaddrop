@@ -45,12 +45,13 @@ const ChatArea = () => {
         id: "",
         online:""
     });
-    // const [readMessage, setReadMessage] = useState({
-    //     sender: "",
-    //     senderId: "",
-    //     reader: "",
-    //     readerId:""
-    // })
+    const [userAction, setUserAction] = useState({
+        typing: false,
+        typer: "",
+        typerId: "",
+        recipient: ""
+    });
+    const [timer, setTimer] = useState(null);
 
     const username = useParams().username;
 
@@ -105,10 +106,31 @@ const ChatArea = () => {
         socket.on("message-read", (inboxDetails) => {
 
             setMessages((prevMessages) =>
-            prevMessages.map((message) =>
-                message.recipientId===inboxDetails.recipientId ? { ...message, read: true } : message
-            ));    
+                prevMessages.map((message) =>
+                    message.recipientId === inboxDetails.recipientId ? { ...message, read: true } : message
+                ));
             
+        });
+
+        socket.on("user-is-typing", (typerDetails) => {
+            setUserAction((prevUserAction) => ({
+                ...prevUserAction,
+                typing: true,
+                typer: typerDetails.typer,
+                typerId: typerDetails.typerId,
+                recipient: typerDetails.recipientId
+            }))
+        });
+
+        socket.on("stop-typing-indicator", () => {
+            
+            setUserAction((prevActiveUsers) => ({
+                ...prevActiveUsers,
+                typing:false,
+                typer: "",
+                typerId: "",
+                recipient: ""
+            }));
         })
 
         socket.on("connect_error", (err) => {
@@ -126,6 +148,8 @@ const ChatArea = () => {
             socket.off("users");
             socket.off("message-response");
             socket.off("message-read");
+            socket.off("user-is-typing");
+            socket.on("stop-typing-indicator");
             socket.off("connect_error");
             socket.off("disconnect")
         }
@@ -135,6 +159,17 @@ const ChatArea = () => {
     const handleMessage = (e) => {
         
         setMessageBody(e.target.value);
+
+        clearTimeout(timer);
+
+        // once user stops typing for 500 milliseconds, send stop event. 
+        const newTimer = setTimeout(() => {
+            socket.emit("stop-typing-indicator", {recipientId: activeUsers.id });
+        }, 500);
+
+        setTimer(newTimer);
+
+        socket.emit("user-is-typing", { typer: username, typerId: senderId[0].id, recipientId: activeUsers.id });
     }
 
     const sendReadNotification = (sender) => {
@@ -252,7 +287,16 @@ const ChatArea = () => {
         }
     }
 
-    const userOnlineStatus = onlineStatus();
+    const typingUser = () => {
+        
+        if (userAction.typing) {
+
+            return userAction.typerId === activeUsers.id ? `${userAction.typer} is typing` : undefined
+        }
+        
+    }
+
+    const userOnlineStatus = onlineStatus()==="online" && typingUser()!==undefined? typingUser():onlineStatus()
         
     return (
         <Fragment>
@@ -289,7 +333,6 @@ const ChatArea = () => {
                             messages.map((message, index) => (
                                 (message.senderId===activeUsers.id  || activeUsers.id===message.recipientId) &&
                                 <article key={index} className={message.sender === username ? "me" : "receiver"} >
-                                        {console.log(message)}
                                     <p className="message-body">
                                         {message.body}
                                     </p>
