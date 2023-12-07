@@ -50,7 +50,7 @@ io.use((socket, next) => {
 
     socket.username = username;
 
-    connectedUsers.set(socket.id, { id: socket.id, username, online:true, typing:false });
+    connectedUsers.set(socket.id, { id: socket.id, username, online:true});
 
     next();
 });
@@ -94,7 +94,7 @@ io.on("connection", (socket) => {
         io.to(typerDetails.recipientId).emit("user-is-typing", typerDetails);
     });
 
-    socket.on("stop-typing-notification", (recipient) => {
+    socket.on("stop-typing-indicator", (recipient) => {
         
         io.to(recipient.recipientId).emit("stop-typing-notification");
     })
