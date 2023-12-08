@@ -47,7 +47,6 @@ const ChatArea = () => {
     });
     const [userAction, setUserAction] = useState({
         typing: false,
-        typer: "",
         typerId: "",
         recipient: ""
     });
@@ -116,7 +115,6 @@ const ChatArea = () => {
             setUserAction((prevUserAction) => ({
                 ...prevUserAction,
                 typing: true,
-                typer: typerDetails.typer,
                 typerId: typerDetails.typerId,
                 recipient: typerDetails.recipientId
             }))
@@ -127,7 +125,6 @@ const ChatArea = () => {
             setUserAction((prevActiveUsers) => ({
                 ...prevActiveUsers,
                 typing:false,
-                typer: "",
                 typerId: "",
                 recipient: ""
             }));
@@ -291,7 +288,7 @@ const ChatArea = () => {
         
         if (userAction.typing) {
 
-            return userAction.typerId === activeUsers.id ? `${userAction.typer} is typing` : undefined
+            return userAction.typerId === activeUsers.id ? `typing...` : undefined
         }
         
     }
