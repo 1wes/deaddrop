@@ -278,7 +278,7 @@ const ChatArea = () => {
         }
     }
 
-    const typingUser = () => {
+    const senderTyping = () => {
         
         if (userAction.typing) {
 
@@ -287,7 +287,8 @@ const ChatArea = () => {
         
     }
 
-    const userOnlineStatus = onlineStatus()==="online" && typingUser()!==undefined? typingUser():onlineStatus()
+    // if user is online and typing, indicate typing.
+    const userOnlineStatus = onlineStatus()==="online" && senderTyping()!==undefined? senderTyping():onlineStatus()
         
     return (
         <Fragment>
