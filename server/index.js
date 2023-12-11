@@ -14,11 +14,18 @@ app.use(cors());
 
 const server = http.createServer(app);
 
+const oneDay = 1000 * 3600 * 24;
+
 // expression session middleware
 const sessionMiddleware = session({
     saveUninitialized: true,
     resave: false,
-    secret: session_secret
+    secret: session_secret,
+    cookie: {
+        maxAge: oneDay,
+        httpOnly: true
+
+    }
 });
 
 app.use(sessionMiddleware);
@@ -59,6 +66,12 @@ io.on("connection", (socket) => {
 
     io.emit("users", Array.from(connectedUsers.values()));
 
+    // get user data
+    const sessionData = socket.handshake.session;
+
+    console.log(sessionData.cookie);
+
+
     // send message to recipient and back to sender
     socket.on("sent-message", (msg) => {
 
@@ -76,11 +89,13 @@ io.on("connection", (socket) => {
         io.to(socket.id).emit("message-response", message); 
     });
 
+
     // notify send that their message has been read
     socket.on("message-read", (inboxDetails) => {
 
         io.to(inboxDetails.senderId).emit("message-read", inboxDetails);
     });
+
 
     // notify recipient when sender is typing
     socket.on("user-is-typing", (typerDetails) => {
@@ -94,10 +109,12 @@ io.on("connection", (socket) => {
         io.to(typerDetails.recipientId).emit("user-is-typing", typerDetails);
     });
 
+
     socket.on("stop-typing-indicator", (recipient) => {
         
         io.to(recipient.recipientId).emit("stop-typing-indicator");
     })
+    
 
     // update online status once user disconnects
     socket.on("disconnect", () => {
@@ -105,11 +122,12 @@ io.on("connection", (socket) => {
             ...connectedUsers.get(socket.id), online: false, lastSeen: new Date(Date.now())
         });
 
-        connectedUsers.delete(socket.id)
+        // connectedUsers.delete(socket.id)
         
         io.emit("users", Array.from(connectedUsers.values()));
     });
 })
+
 
 server.listen(port, () => {
     console.log(`Server running at port ${port}`)
