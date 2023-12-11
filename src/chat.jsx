@@ -142,13 +142,7 @@ const ChatArea = () => {
         });
 
         return () => {
-            socket.off("users");
-            socket.off("message-response");
-            socket.off("message-read");
-            socket.off("user-is-typing");
-            socket.on("stop-typing-indicator");
-            socket.off("connect_error");
-            socket.off("disconnect")
+            socket.removeAllListeners();
         }
         
     }, [messages, activeUsers, openInboxAudio, closedInboxAudio, messageInput]);
