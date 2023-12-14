@@ -76,14 +76,33 @@ const ChatArea = () => {
             messageInput.current.focus();
         }
 
+        // get sessionID
+        const sessionID = localStorage.getItem("sessionID");
+
+        if (sessionID) {
+            
+            socket.auth = { sessionID };
+
+            socket.connect();
+        }
+
+        socket.on("session", ({ sessionID, userID }) => {
+
+            socket.auth = { sessionID };
+
+            localStorage.setItem("sessionID", sessionID);
+
+            socket.userID = userID;
+        });
+
         socket.connect();
 
         socket.auth = { username }
 
         socket.on("users", (users) => {
 
-            setUsers((prevUsers) => ({ ...prevUsers, connected:users }))            
-        })
+            setUsers((prevUsers) => ({ ...prevUsers, connected: users }))
+        });
 
         socket.on("message-response", (msg) => {
 
