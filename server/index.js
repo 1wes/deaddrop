@@ -7,9 +7,11 @@ const socketIo = require('socket.io');
 const session = require('express-session');
 const { session_secret } = require('./env-config');
 const socketSession = require('express-socket.io-session');
+const cookieParser = require('cookie-parser');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(cors());
 
 const server = http.createServer(app);
@@ -24,7 +26,6 @@ const sessionMiddleware = session({
     cookie: {
         maxAge: oneDay,
         httpOnly: true
-
     }
 });
 
@@ -49,15 +50,26 @@ io.use(socketSession(sessionMiddleware, {
 const connectedUsers = new Map(); // Map to store connected users
 
 io.use((socket, next) => {
+
+    const sessionID = socket.handshake.auth.sessionID;
+
+    if (sessionID) {
+        
+        console.log(sessionID);
+    }
+
     const username = socket.handshake.auth.username;
 
     if (!username) {
         return next(new Error("Invalid username"))
     }
 
+    // if there is no session, create a new one
     socket.username = username;
+    socket.sessionID = socket.handshake.sessionID;
+    socket.userID = socket.id;
 
-    connectedUsers.set(socket.id, { id: socket.id, username, online:true});
+    connectedUsers.set(socket.id, { id: socket.userID, username, online:true});
 
     next();
 });
@@ -66,11 +78,7 @@ io.on("connection", (socket) => {
 
     io.emit("users", Array.from(connectedUsers.values()));
 
-    // get user data
-    const sessionData = socket.handshake.session;
-
-    console.log(sessionData.cookie);
-
+    socket.emit("session", {sessionID:socket.sessionID, userID:socket.userID})
 
     // send message to recipient and back to sender
     socket.on("sent-message", (msg) => {
