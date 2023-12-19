@@ -81,23 +81,20 @@ const ChatArea = () => {
 
         if (sessionID) {
             
-            socket.auth = { sessionID };
+            socket.auth = { sessionID, username };
 
             socket.connect();
+
         }
 
         socket.on("session", ({ sessionID, userID }) => {
 
-            socket.auth = { sessionID };
+            socket.auth = { sessionID, username };
 
             localStorage.setItem("sessionID", sessionID);
 
             socket.userID = userID;
         });
-
-        socket.connect();
-
-        socket.auth = { username }
 
         socket.on("users", (users) => {
 
