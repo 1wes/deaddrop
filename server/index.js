@@ -8,6 +8,8 @@ const session = require('express-session');
 const { session_secret } = require('./env-config');
 const socketSession = require('express-socket.io-session');
 const cookieParser = require('cookie-parser');
+const { createClient } = require('redis');
+const RedisStore = require('connect-redis').default;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -18,18 +20,24 @@ const server = http.createServer(app);
 
 const oneDay = 1000 * 3600 * 24;
 
-// expression session middleware
-const sessionMiddleware = session({
+// initialize redis client
+const redisClient = createClient();
+
+// initialize redisStore
+let redisStore = new RedisStore({
+    client:redisClient
+})
+
+app.use(session({
+    store: redisStore,
     saveUninitialized: true,
     resave: false,
     secret: session_secret,
     cookie: {
         maxAge: oneDay,
-        httpOnly: true
+        httpOnly:true
     }
-});
-
-app.use(sessionMiddleware);
+}));
 
 app.get("/", (req, res) => {
     res.send("This is the homepage buoy");
@@ -43,9 +51,9 @@ const io = socketIo(server, {
 });
 
 // socket session middleware
-io.use(socketSession(sessionMiddleware, {
-    autoSave: true
-}));
+// io.use(socketSession(sessionMiddleware, {
+//     autoSave: true
+// }));
 
 const connectedUsers = new Map(); // Map to store connected users
 
@@ -75,6 +83,8 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
+
+    // persist session
 
     io.emit("users", Array.from(connectedUsers.values()));
 
@@ -140,5 +150,11 @@ io.on("connection", (socket) => {
 server.listen(port, () => {
     console.log(`Server running at port ${port}`)
 });
+
+// check for redis server errors
+redisClient.on("error", (err) => {
+    
+    console.log(`Redis Server Error: \n ${err}`)
+})
 
 
