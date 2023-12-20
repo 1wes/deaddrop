@@ -18,26 +18,26 @@ app.use(cors());
 
 const server = http.createServer(app);
 
-const oneDay = 1000 * 3600 * 24;
+// const oneDay = 1000 * 3600 * 24;
 
 // initialize redis client
 const redisClient = createClient();
 
+redisClient.connect();
+
 // initialize redisStore
-let redisStore = new RedisStore({
+const redisStore = new RedisStore({
     client:redisClient
 })
 
-app.use(session({
+const sessionMiddleware = session({
     store: redisStore,
     saveUninitialized: true,
     resave: false,
     secret: session_secret,
-    cookie: {
-        maxAge: oneDay,
-        httpOnly:true
-    }
-}));
+})
+
+app.use(sessionMiddleware);
 
 app.get("/", (req, res) => {
     res.send("This is the homepage buoy");
@@ -51,22 +51,52 @@ const io = socketIo(server, {
 });
 
 // socket session middleware
-// io.use(socketSession(sessionMiddleware, {
-//     autoSave: true
-// }));
+io.use(socketSession(sessionMiddleware, {
+    autoSave: true
+}));
 
 const connectedUsers = new Map(); // Map to store connected users
 
-io.use((socket, next) => {
+io.use(async (socket, next) => {
 
     const sessionID = socket.handshake.auth.sessionID;
 
     if (sessionID) {
-        
-        console.log(sessionID);
-    }
 
-    const username = socket.handshake.auth.username;
+        console.log(sessionID);
+        
+        // retirieve session
+        const storedSession = await new Promise((resolve, reject) => {
+            
+            redisStore.get(sessionID, (err, retrievedSession) => {
+                
+                if (err) {
+                    reject("Err:", err)
+                }
+
+                resolve(retrievedSession);
+            })
+        });
+
+        if (storedSession) {
+
+            console.log(storedSession);
+
+            socket.sessionId = storedSession.sessionID;
+            socket.userID = storedSession.userID;
+            socket.username = storedSession.username
+            
+            return next();
+        }
+    }
+    
+    // redisStore.all((err, sessions) => {
+        
+    //     console.log(sessions);
+    // }); 
+    // redisClient.flushDb();
+
+    const { username } = socket.handshake.auth;
 
     if (!username) {
         return next(new Error("Invalid username"))
@@ -85,10 +115,22 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
 
     // persist session
+    const { sessionID, userID, username } = socket;
+
+    const newSession = {
+        sessionID: sessionID,
+        userID: userID, 
+        username: username
+    }
+
+    redisStore.set(sessionID, newSession, (err => {
+        
+        if (err) console.log(err);
+    }));
 
     io.emit("users", Array.from(connectedUsers.values()));
 
-    socket.emit("session", {sessionID:socket.sessionID, userID:socket.userID})
+    socket.emit("session", { sessionID: sessionID, userID: userID });
 
     // send message to recipient and back to sender
     socket.on("sent-message", (msg) => {
@@ -140,7 +182,7 @@ io.on("connection", (socket) => {
             ...connectedUsers.get(socket.id), online: false, lastSeen: new Date(Date.now())
         });
 
-        // connectedUsers.delete(socket.id)
+        connectedUsers.delete(socket.id)
         
         io.emit("users", Array.from(connectedUsers.values()));
     });
