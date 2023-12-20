@@ -85,6 +85,11 @@ const ChatArea = () => {
 
             socket.connect();
 
+        } else {
+            
+            socket.auth = { sessionID, username };
+
+            socket.connect();
         }
 
         socket.on("session", ({ sessionID, userID }) => {
