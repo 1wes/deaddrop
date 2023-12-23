@@ -1,4 +1,4 @@
-import { useState, Fragment} from 'react'
+import { useState, Fragment, useEffect } from 'react';
 import './App.css';
 import deaddropIcon from './assets/deaddrop.svg';
 import { useNavigate } from 'react-router-dom';
@@ -31,6 +31,34 @@ function App() {
     }
 
   }
+
+  useEffect(() => {
+
+    // get the sessionID from local storage
+    const sessionID = localStorage.getItem("sessionID");
+
+    if (sessionID) {
+      
+      socket.auth = { sessionID };
+
+      socket.connect();
+    }
+
+    // store sessionID when session is created from server
+    socket.on("session", ({ sessionID, userID }) => {
+      
+      socket.auth = { sessionID };
+
+      localStorage.setItem("sessionID", sessionID);
+
+      socket.userID = userID;
+    });
+
+    return () => {
+      socket.removeAllListeners();
+    }
+    
+  }, []);
 
   return (
     <Fragment>
