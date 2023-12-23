@@ -1,7 +1,8 @@
 import { useState, Fragment} from 'react'
 import './App.css';
 import deaddropIcon from './assets/deaddrop.svg';
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
+import socket from './socket';
 
 function App() {
 
@@ -23,6 +24,10 @@ function App() {
       navigate(`/deadDrop/chat/${username}`);
 
       setUsername("");
+
+      socket.auth = { username };
+
+      socket.connect();
     }
 
   }
