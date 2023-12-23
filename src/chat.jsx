@@ -76,25 +76,6 @@ const ChatArea = () => {
             messageInput.current.focus();
         }
 
-        // get sessionID
-        // const sessionID = localStorage.getItem("sessionID");
-
-        // if (sessionID) {
-            
-        //     socket.auth = { sessionID };
-
-        //     socket.connect();
-        // } 
-
-        // socket.on("session", ({ sessionID, userID }) => {
-
-        //     socket.auth = { sessionID };
-
-        //     localStorage.setItem("sessionID", sessionID);
-
-        //     socket.userID = userID;
-        // });
-
         socket.on("users", (users) => {
 
             setUsers((prevUsers) => ({ ...prevUsers, connected: users }))
