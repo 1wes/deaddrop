@@ -77,27 +77,23 @@ const ChatArea = () => {
         }
 
         // get sessionID
-        const sessionID = localStorage.getItem("sessionID");
+        // const sessionID = localStorage.getItem("sessionID");
 
-        if (sessionID) {
+        // if (sessionID) {
             
-            socket.auth = { sessionID };
+        //     socket.auth = { sessionID };
 
-            socket.connect();
-        } 
-            
-        socket.auth = { username };
+        //     socket.connect();
+        // } 
 
-        socket.connect();
+        // socket.on("session", ({ sessionID, userID }) => {
 
-        socket.on("session", ({ sessionID, userID }) => {
+        //     socket.auth = { sessionID };
 
-            socket.auth = { sessionID };
+        //     localStorage.setItem("sessionID", sessionID);
 
-            localStorage.setItem("sessionID", sessionID);
-
-            socket.userID = userID;
-        });
+        //     socket.userID = userID;
+        // });
 
         socket.on("users", (users) => {
 
