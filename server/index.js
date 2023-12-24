@@ -62,8 +62,6 @@ io.use(async (socket, next) => {
     const sessionID = socket.handshake.auth.sessionID;
 
     if (sessionID) {
-
-        console.log(sessionID);
         
         // retirieve session
         const storedSession = await new Promise((resolve, reject) => {
