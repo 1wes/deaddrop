@@ -78,20 +78,34 @@ io.use(async (socket, next) => {
 
         if (storedSession) {
 
-            console.log(storedSession);
-
             socket.sessionId = storedSession.sessionID;
             socket.userID = storedSession.userID;
             socket.username = storedSession.username
             
-            return next();
+        } else {
+
+            // persist session if none is found in redis store
+            const { sessionID, userID, username } = socket;
+
+            const newSession = {
+                sessionID: sessionID,
+                userID: userID, 
+                username: username
+            }
+
+            redisStore.set(sessionID, newSession, (err => {
+        
+                if (err) console.log(err);
+            }));
+
         }
     }
     
-    // redisStore.all((err, sessions) => {
+    redisStore.all((err, sessions) => {
         
-    //     console.log(sessions);
-    // }); 
+        console.log(sessions);
+    }); 
+
     // redisClient.flushDb();
 
     const { username } = socket.handshake.auth;
@@ -100,7 +114,6 @@ io.use(async (socket, next) => {
         return next(new Error("Invalid username"))
     }
 
-    // if there is no session, create a new one
     socket.username = username;
     socket.sessionID = socket.handshake.sessionID;
     socket.userID = socket.id;
@@ -112,19 +125,7 @@ io.use(async (socket, next) => {
 
 io.on("connection", (socket) => {
 
-    // persist session
-    const { sessionID, userID, username } = socket;
-
-    const newSession = {
-        sessionID: sessionID,
-        userID: userID, 
-        username: username
-    }
-
-    redisStore.set(sessionID, newSession, (err => {
-        
-        if (err) console.log(err);
-    }));
+    const { sessionID, userID } = socket;
 
     io.emit("users", Array.from(connectedUsers.values()));
 
@@ -144,7 +145,7 @@ io.on("connection", (socket) => {
                                     
         io.to(message.recipientId).emit("message-response", message);
 
-        io.to(socket.id).emit("message-response", message); 
+        io.to(userID).emit("message-response", message); 
     });
 
 
