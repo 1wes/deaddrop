@@ -75,17 +75,17 @@ io.use(async (socket, next) => {
                 }
 
                 resolve(retrievedSession);
-
-                console.log(retrievedSession);
             })
         });
 
         if (storedSession) {
 
-            socket.sessionId = storedSession.sessionID;
+            console.log(storedSession)
+            socket.sessionID = storedSession.sessionID;
             socket.userID = storedSession.userID;
             socket.username = storedSession.username;
         } 
+
     } else {
         
         // persist session if none is found in redis store
@@ -105,6 +105,7 @@ io.use(async (socket, next) => {
 
         socket.sessionID = newSessionId;
         socket.userID = newUserID;
+        socket.username = username;
     }
     
     // redisStore.all((err, sessions) => {
@@ -118,9 +119,7 @@ io.use(async (socket, next) => {
         return next(new Error("Invalid username"))
     }
 
-    socket.username = username;
-
-    connectedUsers.set(socket.id, { id: socket.userID, username, online:true});
+    connectedUsers.set(socket.userID, { id: socket.userID, username, online:true});
 
     next();
 });
@@ -128,6 +127,8 @@ io.use(async (socket, next) => {
 io.on("connection", (socket) => {
 
     const { sessionID, userID } = socket;
+
+    console.log(sessionID, userID);
 
     io.emit("users", Array.from(connectedUsers.values()));
 
