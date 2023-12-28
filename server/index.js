@@ -59,12 +59,12 @@ const connectedUsers = new Map(); // Map to store connected users
 
 io.use(async (socket, next) => {
 
-    const sessionID = socket.handshake.auth.sessionID;
+    const { sessionID } = socket.handshake.auth;
 
     const { username } = socket.handshake.auth;
 
     if (sessionID) {
-        
+
         // retirieve session
         const storedSession = await new Promise((resolve, reject) => {
             
@@ -75,6 +75,8 @@ io.use(async (socket, next) => {
                 }
 
                 resolve(retrievedSession);
+
+                console.log(retrievedSession);
             })
         });
 
@@ -83,9 +85,6 @@ io.use(async (socket, next) => {
             socket.sessionId = storedSession.sessionID;
             socket.userID = storedSession.userID;
             socket.username = storedSession.username;
-
-            // next();
-
         } 
     } else {
         
@@ -99,7 +98,7 @@ io.use(async (socket, next) => {
             username: username
         }
 
-        redisStore.set(sessionID, newSession, (err => {
+        redisStore.set(newSessionId, newSession, (err => {
         
             if (err) console.log(err);
         }));
@@ -113,7 +112,7 @@ io.use(async (socket, next) => {
     //     console.log(sessions);
     // }); 
 
-    redisClient.flushDb(); 
+    // redisClient.flushDb();
 
     if (!username) {
         return next(new Error("Invalid username"))
@@ -121,7 +120,7 @@ io.use(async (socket, next) => {
 
     socket.username = username;
 
-    connectedUsers.set(socket.userID, { id: socket.userID, username, online:true});
+    connectedUsers.set(socket.id, { id: socket.userID, username, online:true});
 
     next();
 });
@@ -132,7 +131,7 @@ io.on("connection", (socket) => {
 
     io.emit("users", Array.from(connectedUsers.values()));
 
-    socket.emit("session", { sessionID: sessionID, userID: userID });
+    socket.emit("newSession", { sessionID, userID });
 
     // send message to recipient and back to sender
     socket.on("sent-message", (msg) => {
