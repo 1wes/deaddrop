@@ -21,13 +21,14 @@ function App() {
 
     if (username !== "") {
       
-      navigate(`/deadDrop/chat/${username}`);
-
       setUsername("");
 
       socket.auth = { username };
 
       socket.connect();
+
+      navigate(`/deadDrop/chat/${username}`);
+
     }
 
   }
@@ -45,17 +46,19 @@ function App() {
     }
 
     // store sessionID when session is created from server
-    socket.on("session", ({ sessionID, userID }) => {
+    const storeSession = ({ userID, sessionID }) => {
       
       socket.auth = { sessionID };
 
       localStorage.setItem("sessionID", sessionID);
 
       socket.userID = userID;
-    });
+    }
+
+    socket.on("newSession", storeSession);
 
     return () => {
-      socket.removeAllListeners();
+      socket.off("session", storeSession);
     }
     
   }, []);
