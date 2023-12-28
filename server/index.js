@@ -61,6 +61,8 @@ io.use(async (socket, next) => {
 
     const sessionID = socket.handshake.auth.sessionID;
 
+    const { username } = socket.handshake.auth;
+
     if (sessionID) {
         
         // retirieve session
@@ -80,45 +82,46 @@ io.use(async (socket, next) => {
 
             socket.sessionId = storedSession.sessionID;
             socket.userID = storedSession.userID;
-            socket.username = storedSession.username
-            
-        } else {
+            socket.username = storedSession.username;
 
-            // persist session if none is found in redis store
-            const { sessionID, userID, username } = socket;
+            // next();
 
-            const newSession = {
-                sessionID: sessionID,
-                userID: userID, 
-                username: username
-            }
-
-            redisStore.set(sessionID, newSession, (err => {
+        } 
+    } else {
         
-                if (err) console.log(err);
-            }));
+        // persist session if none is found in redis store
+        const newSessionId = socket.handshake.sessionID;
+        const newUserID = socket.id;
 
+        const newSession = {
+            sessionID: newSessionId,
+            userID: newUserID, 
+            username: username
         }
+
+        redisStore.set(sessionID, newSession, (err => {
+        
+            if (err) console.log(err);
+        }));
+
+        socket.sessionID = newSessionId;
+        socket.userID = newUserID;
     }
     
-    redisStore.all((err, sessions) => {
+    // redisStore.all((err, sessions) => {
         
-        console.log(sessions);
-    }); 
+    //     console.log(sessions);
+    // }); 
 
-    // redisClient.flushDb();
-
-    const { username } = socket.handshake.auth;
+    redisClient.flushDb(); 
 
     if (!username) {
         return next(new Error("Invalid username"))
     }
 
     socket.username = username;
-    socket.sessionID = socket.handshake.sessionID;
-    socket.userID = socket.id;
 
-    connectedUsers.set(socket.id, { id: socket.userID, username, online:true});
+    connectedUsers.set(socket.userID, { id: socket.userID, username, online:true});
 
     next();
 });
