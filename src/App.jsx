@@ -7,7 +7,7 @@ import socket from './socket';
 function App() {
 
   const [username, setUsername] = useState("");
-  // const [usernameSelected, setUsernameSelected] = useState(false);
+  const [usernameSelected, setUsernameSelected] = useState(false);
 
   const navigate = useNavigate();
 
@@ -28,10 +28,7 @@ function App() {
 
       socket.connect();
 
-      // setUsernameSelected(true);
-
-      navigate(`/deadDrop/chat/${username}`);
-
+      setUsernameSelected(true);
     }
 
   }
@@ -44,6 +41,10 @@ function App() {
     if (sessionInfo) {
 
       const { sessionID, username } = JSON.parse(sessionInfo);
+
+      setUsername(username);
+
+      setUsernameSelected(true);
       
       socket.auth = { sessionID };
 
@@ -62,14 +63,27 @@ function App() {
 
     socket.on("newSession", storeSession);
 
+    // handle invalid username error
+    const handleUsernameError = (err) => {
+      
+      if (err.message = "Invalid username") {
+        
+        setUsernameSelected(false);
+      }
+    }
+
+    socket.on("connect_error", handleUsernameError);
+
     return () => {
       socket.off("session", storeSession);
+      socket.off("connect_error", handleUsernameError);
     }
     
   }, []);
 
   return (
     <Fragment>
+      {usernameSelected && navigate(`/deadDrop/chat/${username}`)};
       <nav>
         <div className='image'>
           <img src={deaddropIcon} alt='deadrop-icon' />
