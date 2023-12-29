@@ -7,6 +7,7 @@ import socket from './socket';
 function App() {
 
   const [username, setUsername] = useState("");
+  // const [usernameSelected, setUsernameSelected] = useState(false);
 
   const navigate = useNavigate();
 
@@ -27,6 +28,8 @@ function App() {
 
       socket.connect();
 
+      // setUsernameSelected(true);
+
       navigate(`/deadDrop/chat/${username}`);
 
     }
@@ -36,9 +39,11 @@ function App() {
   useEffect(() => {
 
     // get the sessionID from local storage
-    const sessionID = localStorage.getItem("sessionID");
+    const sessionInfo = localStorage.getItem("sessionInfo");
 
-    if (sessionID) {
+    if (sessionInfo) {
+
+      const { sessionID, username } = JSON.parse(sessionInfo);
       
       socket.auth = { sessionID };
 
@@ -46,11 +51,11 @@ function App() {
     }
 
     // store sessionID when session is created from server
-    const storeSession = ({ userID, sessionID }) => {
+    const storeSession = ({ userID, sessionID, username }) => {
       
       socket.auth = { sessionID };
 
-      localStorage.setItem("sessionID", sessionID);
+      localStorage.setItem("sessionInfo", JSON.stringify({sessionID, username}));
 
       socket.userID = userID;
     }
