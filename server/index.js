@@ -126,13 +126,11 @@ io.use(async (socket, next) => {
 
 io.on("connection", (socket) => {
 
-    const { sessionID, userID } = socket;
-
-    console.log(sessionID, userID);
+    const { sessionID, userID, username } = socket;
 
     io.emit("users", Array.from(connectedUsers.values()));
 
-    socket.emit("newSession", { sessionID, userID });
+    socket.emit("newSession", { sessionID, userID, username });
 
     // send message to recipient and back to sender
     socket.on("sent-message", (msg) => {
