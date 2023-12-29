@@ -74,16 +74,21 @@ function App() {
 
     socket.on("connect_error", handleUsernameError);
 
+    // if session exists, go to chat page
+    if (usernameSelected) {
+      
+      navigate(`/deadDrop/chat/${username}`);
+    };
+
     return () => {
       socket.off("session", storeSession);
       socket.off("connect_error", handleUsernameError);
     }
     
-  }, []);
+  }, [usernameSelected, username, navigate]);
 
   return (
     <Fragment>
-      {usernameSelected && navigate(`/deadDrop/chat/${username}`)};
       <nav>
         <div className='image'>
           <img src={deaddropIcon} alt='deadrop-icon' />
