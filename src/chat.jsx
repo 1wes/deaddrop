@@ -76,6 +76,10 @@ const ChatArea = () => {
             messageInput.current.focus();
         }
 
+        socket.auth = { username };
+
+        socket.connect();
+
         socket.on("users", (users) => {
 
             setUsers((prevUsers) => ({ ...prevUsers, connected: users }))
