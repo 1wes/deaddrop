@@ -1,13 +1,21 @@
 import { useState, Fragment, useEffect } from 'react';
+
 import './App.css';
+
 import deaddropIcon from './assets/deaddrop.svg';
+
 import { useNavigate } from 'react-router-dom';
+
 import socket from './socket';
+
+import { useSocketContext } from './context/socketContext';
 
 function App() {
 
   const [username, setUsername] = useState("");
   const [usernameSelected, setUsernameSelected] = useState(false);
+
+  const { setSocket } = useSocketContext();
 
   const navigate = useNavigate();
 
@@ -29,6 +37,8 @@ function App() {
       socket.connect();
 
       setUsernameSelected(true);
+
+      setSocket(socket);
     }
 
   }
@@ -49,6 +59,8 @@ function App() {
       socket.auth = { sessionID };
 
       socket.connect();
+
+      setSocket(socket);
     }
 
     // store sessionID when session is created from server
