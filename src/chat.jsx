@@ -8,7 +8,7 @@ import { LuSendHorizonal } from 'react-icons/lu';
 import { FaLockOpen } from 'react-icons/fa';
 import { IoCheckmarkDone } from "react-icons/io5";
 
-import socket from "./socket";
+import { useSocketContext } from "./context/socketContext";
 
 import deadDrop from './assets/deaddrop.svg'
 import openSound from './assets/ringtone-1-46486.mp3';
@@ -52,6 +52,8 @@ const ChatArea = () => {
     });
     const [timer, setTimer] = useState(null);
 
+    const { socket } = useSocketContext();
+
     const username = useParams().username;
 
     const latestMessage = useRef(null);
@@ -76,73 +78,71 @@ const ChatArea = () => {
             messageInput.current.focus();
         }
 
-        socket.auth = { username };
+        if (socket) {
 
-        socket.connect();
+            socket.on("users", (users) => {
 
-        socket.on("users", (users) => {
-
-            setUsers((prevUsers) => ({ ...prevUsers, connected: users }))
-        });
-
-        socket.on("message-response", (msg) => {
-
-            // if message is for selected inbox, mark as read
-            const message = activeUsers.id === msg.senderId ? { ...msg, read: true } : { ...msg, read: false };
+                setUsers((prevUsers) => ({ ...prevUsers, connected: users }))
+            });
+    
+            socket.on("message-response", (msg) => {
+        
+                // if message is for selected inbox, mark as read
+                const message = activeUsers.id === msg.senderId ? { ...msg, read: true } : { ...msg, read: false };
+                
+                setMessages((prevMessage) => [...prevMessage, message]);
+    
+                // play different notification chime depending on whether inbox is open or closed
+                msg.sender === username ? "" : activeUsers.id === msg.senderId ? openInboxAudio.play() : closedInboxAudio.play();
+    
+                // if message is received while inbox is open, send notification to sender to blue tick
+                if (message.senderId === activeUsers.id) {
+                    sendReadNotification({ senderId: message.senderId, recipientId: message.recipientId });
+                }
+            });
+    
+            socket.on("message-read", (inboxDetails) => {
+    
+                setMessages((prevMessages) =>
+                    prevMessages.map((message) =>
+                        message.recipientId === inboxDetails.recipientId ? { ...message, read: true } : message
+                    ));
+                
+            });
+    
+            socket.on("user-is-typing", (typerDetails) => {
+                setUserAction((prevUserAction) => ({
+                    ...prevUserAction,
+                    typing: true,
+                    typerId: typerDetails.typerId,
+                    recipient: typerDetails.recipientId
+                }))
+            });
+    
+            socket.on("stop-typing-indicator", () => {
+                
+                setUserAction((prevActiveUsers) => ({
+                    ...prevActiveUsers,
+                    typing:false,
+                    typerId: "",
+                    recipient: ""
+                }));
+            })
+    
+            socket.on("connect_error", (err) => {
+                
+                if (err.message === "Invalid username") {
+                    console.log(err);
+                }
+            })
+    
+            socket.on("disconnect", () => {
+                console.log(`Disconnected`);
+            });
             
-            setMessages((prevMessage) => [...prevMessage, message]);
-
-            // play different notification chime depending on whether inbox is open or closed
-            msg.sender === username ? "" : activeUsers.id === msg.senderId ? openInboxAudio.play() : closedInboxAudio.play();
-
-            // if message is received while inbox is open, send notification to sender to blue tick
-            if (message.senderId === activeUsers.id) {
-                sendReadNotification({ senderId: message.senderId, recipientId:message.recipientId });
+            return () => {
+                socket.removeAllListeners();
             }
-            
-        })
-
-        socket.on("message-read", (inboxDetails) => {
-
-            setMessages((prevMessages) =>
-                prevMessages.map((message) =>
-                    message.recipientId === inboxDetails.recipientId ? { ...message, read: true } : message
-                ));
-            
-        });
-
-        socket.on("user-is-typing", (typerDetails) => {
-            setUserAction((prevUserAction) => ({
-                ...prevUserAction,
-                typing: true,
-                typerId: typerDetails.typerId,
-                recipient: typerDetails.recipientId
-            }))
-        });
-
-        socket.on("stop-typing-indicator", () => {
-            
-            setUserAction((prevActiveUsers) => ({
-                ...prevActiveUsers,
-                typing:false,
-                typerId: "",
-                recipient: ""
-            }));
-        })
-
-        socket.on("connect_error", (err) => {
-            
-            if (err.message === "Invalid username") {
-                console.log(err);
-            }
-        })
-
-        socket.on("disconnect", () => {
-            console.log(`Disconnected`);
-        });
-
-        return () => {
-            socket.removeAllListeners();
         }
         
     }, [messages, activeUsers, openInboxAudio, closedInboxAudio, messageInput]);
