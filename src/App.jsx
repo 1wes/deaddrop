@@ -30,17 +30,12 @@ function App() {
 
     if (username !== "") {
       
-      setUsername("");
-
       socket.auth = { username };
 
       socket.connect();
 
       setUsernameSelected(true);
-
-      setSocket(socket);
     }
-
   }
 
   useEffect(() => {
@@ -56,17 +51,15 @@ function App() {
 
       setUsernameSelected(true);
       
-      socket.auth = { sessionID };
+      socket.auth = { sessionID, username };
 
       socket.connect();
-
-      setSocket(socket);
     }
 
     // store sessionID when session is created from server
     const storeSession = ({ userID, sessionID, username }) => {
       
-      socket.auth = { sessionID };
+      socket.auth = { sessionID, username };
 
       localStorage.setItem("sessionInfo", JSON.stringify({sessionID, username}));
 
@@ -86,18 +79,22 @@ function App() {
 
     socket.on("connect_error", handleUsernameError);
 
+    setSocket(socket);
+
     // if session exists, go to chat page
     if (usernameSelected) {
       
       navigate(`/deadDrop/chat/${username}`);
+
+      setUsername("");
     };
 
     return () => {
-      socket.off("session", storeSession);
+      socket.off("newSession", storeSession);
       socket.off("connect_error", handleUsernameError);
     }
-    
-  }, [usernameSelected, username, navigate]);
+
+  }, [usernameSelected, username, navigate, socket]);
 
   return (
     <Fragment>
