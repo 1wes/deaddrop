@@ -80,13 +80,15 @@ io.use(async (socket, next) => {
 
         if (storedSession) {
 
-            console.log(storedSession)
             socket.sessionID = storedSession.sessionID;
             socket.userID = storedSession.userID;
             socket.username = storedSession.username;
-        } 
 
+            console.log(socket.userID)
+        } 
     } else {
+
+        console.log("none");
         
         // persist session if none is found in redis store
         const newSessionId = socket.handshake.sessionID;
@@ -111,10 +113,10 @@ io.use(async (socket, next) => {
     // redisStore.all((err, sessions) => {
         
     //     console.log(sessions);
-    // }); 
+    // });
 
     // redisClient.flushDb();
-
+    
     if (!username) {
         return next(new Error("Invalid username"))
     }
@@ -132,6 +134,8 @@ io.on("connection", (socket) => {
 
     socket.emit("newSession", { sessionID, userID, username });
 
+    socket.join(userID);
+    
     // send message to recipient and back to sender
     socket.on("sent-message", (msg) => {
 
@@ -160,7 +164,7 @@ io.on("connection", (socket) => {
     // notify recipient when sender is typing
     socket.on("user-is-typing", (typerDetails) => {
 
-        connectedUsers.set(socket.id, {
+        connectedUsers.set(socket.userID, {
             ...connectedUsers.get(typerDetails.typerId), typing: true, recipient:typerDetails.recipientId, typer:typerDetails.typer
         });
           
@@ -178,11 +182,11 @@ io.on("connection", (socket) => {
 
     // update online status once user disconnects
     socket.on("disconnect", () => {
-        connectedUsers.set(socket.id, {
-            ...connectedUsers.get(socket.id), online: false, lastSeen: new Date(Date.now())
+        connectedUsers.set(socket.userID, {
+            ...connectedUsers.get(socket.userID), online: false, lastSeen: new Date(Date.now())
         });
 
-        connectedUsers.delete(socket.id)
+        connectedUsers.delete(socket.userID);
         
         io.emit("users", Array.from(connectedUsers.values()));
     });
