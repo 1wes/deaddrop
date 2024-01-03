@@ -83,8 +83,6 @@ io.use(async (socket, next) => {
             socket.sessionID = storedSession.sessionID;
             socket.userID = storedSession.userID;
             socket.username = storedSession.username;
-
-            console.log(socket.userID)
         } 
     } else {
 
@@ -115,7 +113,7 @@ io.use(async (socket, next) => {
     //     console.log(sessions);
     // });
 
-    // redisClient.flushDb();
+    redisClient.flushDb();
     
     if (!username) {
         return next(new Error("Invalid username"))
