@@ -85,8 +85,6 @@ io.use(async (socket, next) => {
             socket.username = storedSession.username;
         } 
     } else {
-
-        console.log("none");
         
         // persist session if none is found in redis store
         const newSessionId = socket.handshake.sessionID;
@@ -113,7 +111,7 @@ io.use(async (socket, next) => {
     //     console.log(sessions);
     // });
 
-    redisClient.flushDb();
+    // redisClient.flushDb();
     
     if (!username) {
         return next(new Error("Invalid username"))
