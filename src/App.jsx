@@ -19,6 +19,7 @@ function App() {
 
   const navigate = useNavigate();
 
+
   const handleUsername = (e) => {
     
     setUsername(e.target.value)
@@ -56,45 +57,45 @@ function App() {
       socket.connect();
     }
 
-    // store sessionID when session is created from server
-    const storeSession = ({ userID, sessionID, username }) => {
-      
-      socket.auth = { sessionID, username };
-
-      localStorage.setItem("sessionInfo", JSON.stringify({sessionID, username}));
-
-      socket.userID = userID;
-    }
-
-    socket.on("newSession", storeSession);
-
     // handle invalid username error
     const handleUsernameError = (err) => {
-      
-      if (err.message = "Invalid username") {
+              
+        if (err.message = "Invalid username") {
         
-        setUsernameSelected(false);
-      }
+          setUsernameSelected(false);
+        }
+    }
+
+    // store sessionID when session is created from server
+    const storeSession = ({ userID, sessionID, username }) => {        
+      
+      socket.auth = { sessionID, username };
+  
+      localStorage.setItem("sessionInfo", JSON.stringify({sessionID, username}));
+  
+      socket.userID = userID;
+
+      // if session exists, go to chat page
+      if (usernameSelected) {
+      
+        navigate(`/deadDrop/chat/${username}`);
+    
+        setUsername("");
+      };
+
     }
 
     socket.on("connect_error", handleUsernameError);
+    socket.on("newSession", storeSession);
 
     setSocket(socket);
 
-    // if session exists, go to chat page
-    if (usernameSelected) {
-      
-      navigate(`/deadDrop/chat/${username}`);
-
-      setUsername("");
-    };
-
     return () => {
-      socket.off("newSession", storeSession);
       socket.off("connect_error", handleUsernameError);
+      socket.off("newSession", storeSession);
     }
 
-  }, [usernameSelected, username, navigate, socket]);
+  }, [setSocket, usernameSelected, username, navigate]);
 
   return (
     <Fragment>
