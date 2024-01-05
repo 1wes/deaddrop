@@ -93,7 +93,8 @@ io.use(async (socket, next) => {
         const newSession = {
             sessionID: newSessionId,
             userID: newUserID, 
-            username: username
+            username: username,
+            online:true
         }
 
         redisStore.set(newSessionId, newSession, (err => {
@@ -122,7 +123,14 @@ io.use(async (socket, next) => {
     next();
 });
 
-io.on("connection", (socket) => {
+io.on("connection", async(socket) => {
+
+    const allSessions = await redisStore.all((err, sessions) => {
+        
+        return sessions;
+    });
+
+    console.log(Array.from(allSessions.values()));
 
     const { sessionID, userID, username } = socket;
 
