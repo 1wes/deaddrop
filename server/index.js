@@ -130,11 +130,9 @@ io.on("connection", async(socket) => {
         return sessions;
     });
 
-    console.log(Array.from(allSessions.values()));
-
     const { sessionID, userID, username } = socket;
 
-    io.emit("users", Array.from(connectedUsers.values()));
+    io.emit("users", Array.from(allSessions.values()));
 
     socket.emit("newSession", { sessionID, userID, username });
 
