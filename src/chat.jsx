@@ -160,7 +160,7 @@ const ChatArea = () => {
 
         setTimer(newTimer);
 
-        socket.emit("user-is-typing", { typer: username, typerId: senderId[0].userID, recipientId: activeUsers.id });
+        socket.emit("user-is-typing", { typer: username, typerId: senderId[0].userID, recipientId: activeUsers.id, typerSessionID:senderId[0].sessionID });
     }
 
     const sendReadNotification = (sender) => {
@@ -214,7 +214,6 @@ const ChatArea = () => {
     }) : "";
     
     const myNetwork = users.connected ? users.connected.filter((uniqueUsers) => {
-        console.log(uniqueUsers.username)
         return uniqueUsers.username !== username
     }).map((user, index) => (
         <li key={index} className={user.userID === activeUsers.id ? "active-user" : "non-active-user"}
