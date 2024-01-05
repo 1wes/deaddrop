@@ -230,7 +230,7 @@ const ChatArea = () => {
                     (message) =>
                         (user.userID === message.senderId && !message.read)
                 ) && user.userID !== activeUsers.id && <span className="unread-badge"> {
-                    messages.filter((message) => !message.read && user.id === message.senderId).length
+                    messages.filter((message) => !message.read && user.userID === message.senderId).length
                 } </span>
             }
         </li>
