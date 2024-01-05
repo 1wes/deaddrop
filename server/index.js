@@ -55,7 +55,7 @@ io.use(socketSession(sessionMiddleware, {
     autoSave: true
 }));
 
-const connectedUsers = new Map(); // Map to store connected users
+let connectedUsers; // Map to store connected users --stored in redisStore
 
 io.use(async (socket, next) => {
 
@@ -106,11 +106,6 @@ io.use(async (socket, next) => {
         socket.userID = newUserID;
         socket.username = username;
     }
-    
-    // redisStore.all((err, sessions) => {
-        
-    //     console.log(sessions);
-    // });
 
     // redisClient.flushDb();
     
@@ -118,23 +113,22 @@ io.use(async (socket, next) => {
         return next(new Error("Invalid username"))
     }
 
-    connectedUsers.set(socket.userID, { id: socket.userID, username, online:true});
+    connectedUsers = await redisStore.all((err, sessions) => {
+        
+        return sessions;
+    });
+    // connectedUsers.set(socket.userID, { id: socket.userID, username, online:true});
 
     next();
 });
 
 io.on("connection", async(socket) => {
 
-    const allSessions = await redisStore.all((err, sessions) => {
-        
-        return sessions;
-    });
-
     const { sessionID, userID, username } = socket;
 
-    io.emit("users", Array.from(allSessions.values()));
-
     socket.emit("newSession", { sessionID, userID, username });
+
+    io.emit("users", Array.from(connectedUsers.values()));
 
     socket.join(userID);
     
@@ -166,8 +160,8 @@ io.on("connection", async(socket) => {
     // notify recipient when sender is typing
     socket.on("user-is-typing", (typerDetails) => {
 
-        connectedUsers.set(socket.userID, {
-            ...connectedUsers.get(typerDetails.typerId), typing: true, recipient:typerDetails.recipientId, typer:typerDetails.typer
+        redisStore.set(socket.sessionID, {
+            ...redisStore.get(typerDetails.typerSessionID), typing: true, recipient:typerDetails.recipientId, typer:typerDetails.typer
         });
           
         io.emit("users", Array.from(connectedUsers.values()));
@@ -184,11 +178,11 @@ io.on("connection", async(socket) => {
 
     // update online status once user disconnects
     socket.on("disconnect", () => {
-        connectedUsers.set(socket.userID, {
-            ...connectedUsers.get(socket.userID), online: false, lastSeen: new Date(Date.now())
+        redisStore.set(socket.sessionID, {
+            ...redisStore.get(socket.userID), online: false, lastSeen: new Date(Date.now())
         });
 
-        connectedUsers.delete(socket.userID);
+        // connectedUsers.delete(socket.userID);
         
         io.emit("users", Array.from(connectedUsers.values()));
     });
