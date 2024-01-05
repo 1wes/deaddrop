@@ -55,7 +55,18 @@ io.use(socketSession(sessionMiddleware, {
     autoSave: true
 }));
 
- // Map to store connected users --stored in redisStore
+// get all sessions
+const allSessions = async () => {
+    
+    return await redisStore.all((err, sessions) => {
+        
+        if (err) {
+            console.log(err);
+        }
+
+        return sessions;
+    })
+}
 
 // search redisStore for specific session
 const userSession = (sessionId) => {
@@ -128,19 +139,23 @@ io.use(async (socket, next) => {
         return next(new Error("Invalid username"))
     }
 
-    connectedUsers=await redisStore.all((err, sessions) => {
-        
-        return sessions;
-    });;
-
     next();
 });
 
-io.on("connection", (socket) => {
-
+io.on("connection", async (socket) => {
+    
     const { sessionID, userID, username } = socket;
 
+    // change status to online
+    const previousSession = await userSession(sessionID);
+
+    previousSession.online = true;
+
+    redisStore.set(sessionID, previousSession);
+
     socket.emit("newSession", { sessionID, userID, username });
+
+    connectedUsers = await allSessions();
 
     io.emit("users", Array.from(connectedUsers.values()));
 
@@ -185,7 +200,9 @@ io.on("connection", (socket) => {
             typer:typerDetails.typer
         }
 
-        redisStore.set(typerDetails.typerSessionID, updatedSession);    
+        redisStore.set(typerDetails.typerSessionID, updatedSession);
+
+        connectedUsers = await allSessions();
           
         io.emit("users", Array.from(connectedUsers.values()));
         
@@ -200,12 +217,19 @@ io.on("connection", (socket) => {
     
 
     // update online status once user disconnects
-    socket.on("disconnect", () => {
-        // redisStore.set(socket.sessionID, {
-        //     ...redisStore.get(socket.sessionID), online: false, lastSeen: new Date(Date.now())
-        // });
+    socket.on("disconnect", async() => {
+
+        const existingSession = await userSession(socket.sessionID);
+
+        existingSession.online = false;
+
+        existingSession.lastSeen = new Date(Date.now())
         
-        // io.emit("users", Array.from(connectedUsers.values()));
+        redisStore.set(socket.sessionID, existingSession);
+
+        connectedUsers = await allSessions();
+        
+        io.emit("users", Array.from(connectedUsers.values()));
     });
 })
 
