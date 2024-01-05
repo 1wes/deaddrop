@@ -14,6 +14,7 @@ function App() {
 
   const [username, setUsername] = useState("");
   const [usernameSelected, setUsernameSelected] = useState(false);
+  const [sessionReceived, setSessionReceived] = useState(false);
 
   const { setSocket } = useSocketContext();
 
@@ -34,8 +35,6 @@ function App() {
       socket.auth = { username };
 
       socket.connect();
-
-      setUsernameSelected(true);
     }
   }
 
@@ -49,12 +48,14 @@ function App() {
       const { sessionID, username } = JSON.parse(sessionInfo);
 
       setUsername(username);
-
-      setUsernameSelected(true);
       
       socket.auth = { sessionID, username };
 
       socket.connect();
+
+      setUsernameSelected(true);
+
+      setSessionReceived(true);
     }
 
     // handle invalid username error
@@ -75,18 +76,23 @@ function App() {
   
       socket.userID = userID;
 
-      // if session exists, go to chat page
-      if (usernameSelected) {
-      
-        navigate(`/deadDrop/chat/${username}`);
-    
-        setUsername("");
-      };
+      setSessionReceived(true);
 
+      setUsernameSelected(true);
     }
 
     socket.on("connect_error", handleUsernameError);
     socket.on("newSession", storeSession);
+
+    // if session exists, go to chat page
+    if (usernameSelected && sessionReceived) {
+      
+      navigate(`/deadDrop/chat/${username}`);
+    
+      setUsername("");
+
+      setSessionReceived(false);
+    };
 
     setSocket(socket);
 
