@@ -160,7 +160,7 @@ const ChatArea = () => {
 
         setTimer(newTimer);
 
-        socket.emit("user-is-typing", { typer: username, typerId: senderId[0].id, recipientId: activeUsers.id });
+        socket.emit("user-is-typing", { typer: username, typerId: senderId[0].userID, recipientId: activeUsers.id });
     }
 
     const sendReadNotification = (sender) => {
@@ -198,7 +198,7 @@ const ChatArea = () => {
             const messageDetails = {
                 body: messageBody,
                 sender: username,
-                senderId:senderId[0].id,
+                senderId:senderId[0].userID,
                 recipientName: activeUsers.recipient,
                 recipientId:activeUsers.id
             }
@@ -214,10 +214,11 @@ const ChatArea = () => {
     }) : "";
     
     const myNetwork = users.connected ? users.connected.filter((uniqueUsers) => {
+        console.log(uniqueUsers.username)
         return uniqueUsers.username !== username
     }).map((user, index) => (
-        <li key={index} className={user.id === activeUsers.id ? "active-user" : "non-active-user"}
-            onClick={event => selectRecipient(event, { name: user.username, id: user.id })}>
+        <li key={index} className={user.userID === activeUsers.id ? "active-user" : "non-active-user"}
+            onClick={event => selectRecipient(event, { name: user.username, id: user.userID })}>
             <span className="user-icon">
                 {user.username.substring(0, 1)}
             </span>
@@ -228,8 +229,8 @@ const ChatArea = () => {
                 // check if current listed inboxes have unread messages
                 messages.some(
                     (message) =>
-                        (user.id === message.senderId && !message.read)
-                ) && user.id !== activeUsers.id && <span className="unread-badge"> {
+                        (user.userID === message.senderId && !message.read)
+                ) && user.userID !== activeUsers.id && <span className="unread-badge"> {
                     messages.filter((message) => !message.read && user.id === message.senderId).length
                 } </span>
             }
@@ -270,7 +271,7 @@ const ChatArea = () => {
     //check whether user is online
     const onlineStatus = () => {
         
-        const user=users.connected.find(({id})=>id===activeUsers.id)
+        const user=users.connected.find(({userID})=>userID===activeUsers.id)
 
         if (user) {
             
