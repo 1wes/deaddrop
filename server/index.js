@@ -149,7 +149,7 @@ io.on("connection", async (socket) => {
     // change status to online
     const previousSession = await userSession(sessionID);
 
-    previousSession.online = true;
+    previousSession.online = true
 
     redisStore.set(sessionID, previousSession);
 
@@ -158,8 +158,6 @@ io.on("connection", async (socket) => {
     connectedUsers = await allSessions();
 
     io.emit("users", Array.from(connectedUsers.values()));
-
-    // console.log(Array.from(connectedUsers.values()))
 
     socket.join(userID);
     
