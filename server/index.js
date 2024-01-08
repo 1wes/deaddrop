@@ -18,8 +18,6 @@ app.use(cors());
 
 const server = http.createServer(app);
 
-// const oneDay = 1000 * 3600 * 24;
-
 // initialize redis client
 const redisClient = createClient();
 
