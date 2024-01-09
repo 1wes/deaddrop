@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useState } from "react";
 
 // create context object
 const SocketContext = createContext();
@@ -15,20 +15,8 @@ const SocketContextProvider = ({ children }) => {
     )
 }
 
-// custom hook to teleport the socket object
-const useSocketContext = () => {
-    
-    const context = useContext(SocketContext);
-
-    if (!context) {
-        throw new Error("useSocketContext hook must be used within a SocketContextProvider")
-    }
-
-    return context;
-}
-
 export {
-    useSocketContext
+    SocketContext
 }
 
 export default SocketContextProvider;
