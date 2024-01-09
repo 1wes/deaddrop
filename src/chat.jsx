@@ -15,6 +15,7 @@ import openSound from './assets/ringtone-1-46486.mp3';
 import closedSound from './assets/hotel-bell-ding-1-174457.mp3';
 
 
+
 const HeroPage = () => {
     
     return (
@@ -61,29 +62,14 @@ const ChatArea = () => {
     const openInboxAudio = new Audio(openSound);
     const closedInboxAudio = new Audio(closedSound);
 
-    // useEffect(() => {
-        
-    //     if (socket) {
-    //         // socket.connect();
-    //         console.log(socket)
-    //     }
-
-    //     return () => {
-            
-    //         if (socket) {
-    //             socket.disconnect();
-    //         }
-    //     }
-    // }, [socket]);
-
     useEffect(() => {
         
         if (latestMessage.current) {
             latestMessage.current.scrollIntoView({
-                behavior: "smooth"
+                behavior:"smooth"
             })
         }
-    }, [messages.length]);
+    },[messages.length])
 
     useEffect(() => {
 
@@ -93,9 +79,7 @@ const ChatArea = () => {
         }
 
         if (socket) {
-
-            socket.connect();
-
+            
             socket.on("users", (users) => {
 
                 setUsers((prevUsers) => ({ ...prevUsers, connected: users }))
