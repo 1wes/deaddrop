@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import socket from './socket';
 
-import { useSocketContext } from './context/socketContext';
+import useSocketContext from './hooks/useSocketContext';
 
 function App() {
 
